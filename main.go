@@ -36,25 +36,34 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Define the specific channel IDs to search within
+	channelIDs := []string{
+		"UCpf7-LhTbmKk11p4nqw5LYA", // TPA Online
+		"UCxRiylOpWTvJLamhlm63VNw", // TV Zimbo Oficial
+	}
+
 	terms := strings.Split(queries, ",")
 	results := []map[string]string{}
 
 	for _, term := range terms {
-		call := service.Search.List([]string{"id", "snippet"}).
-			Q(strings.TrimSpace(term)).
-			MaxResults(parseMaxResults(maxResults))
-		response, err := call.Do()
-		if err != nil {
-			http.Error(w, "Error making API call to YouTube", http.StatusInternalServerError)
-			return
-		}
+		for _, channelID := range channelIDs {
+			call := service.Search.List([]string{"id", "snippet"}).
+				Q(strings.TrimSpace(term)).
+				ChannelId(channelID). // Filter results by channel ID
+				MaxResults(parseMaxResults(maxResults))
+			response, err := call.Do()
+			if err != nil {
+				http.Error(w, "Error making API call to YouTube", http.StatusInternalServerError)
+				return
+			}
 
-		for _, item := range response.Items {
-			if item.Id.Kind == "youtube#video" {
-				results = append(results, map[string]string{
-					"id":    item.Id.VideoId,
-					"title": item.Snippet.Title,
-				})
+			for _, item := range response.Items {
+				if item.Id.Kind == "youtube#video" {
+					results = append(results, map[string]string{
+						"id":    item.Id.VideoId,
+						"title": item.Snippet.Title,
+					})
+				}
 			}
 		}
 	}

@@ -99,7 +99,7 @@ func main() {
 		fmt.Fprintln(file)
 	}
 
-	fmt.Println("Results saved to youtube_ids.txt")
+	fmt.Println("Resultados salvos em um ficheiro youtube_ids.txt")
 }
 
 // writeIDs writes the ID and title of each result in a list, along with a section name, to the file

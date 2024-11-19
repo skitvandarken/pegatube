@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Search</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.16.0/dist/css/uikit.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/uikit@3.16.0/dist/js/uikit.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/uikit@3.16.0/dist/js/uikit-icons.min.js"></script>
+</head>
+<body>
+
+  <div class="uk-container uk-margin-large-top">
+    <h1 class="uk-heading-line uk-text-center"><span>YouTube Search</span></h1>
+
+    <form id="search-form" class="uk-form-stacked">
+      <div class="uk-margin">
+        <label class="uk-form-label" for="queries">Search Terms (comma-separated)</label>
+        <div class="uk-form-controls">
+          <input class="uk-input" id="queries" type="text" placeholder="e.g., Telejornal, Jornal da Tarde, Ecos e Factos">
+        </div>
+      </div>
+
+      <div class="uk-margin">
+        <label class="uk-form-label" for="max-results">Max Results</label>
+        <div class="uk-form-controls">
+          <input class="uk-input" id="max-results" type="number" value="10" min="1" max="50">
+        </div>
+      </div>
+
+      <button type="submit" class="uk-button uk-button-primary">Search</button>
+    </form>
+
+    <div id="results" class="uk-margin-large-top"></div>
+  </div>
+
+  <script>
+    document.getElementById("search-form").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const queries = document.getElementById("queries").value;
+      const maxResults = document.getElementById("max-results").value;
+
+      fetch(`/search?queries=${encodeURIComponent(queries)}&max-results=${maxResults}`)
+        .then(response => response.json())
+        .then(data => {
+          const resultsDiv = document.getElementById("results");
+          resultsDiv.innerHTML = "";
+
+          if (data.error) {
+            resultsDiv.innerHTML = `<p class="uk-text-danger">${data.error}</p>`;
+          } else {
+            data.forEach(result => {
+              const section = document.createElement("div");
+              section.className = "uk-card uk-card-default uk-card-body uk-margin";
+              section.innerHTML = `<h3>${result.title}</h3><p>ID: ${result.id}</p>`;
+              resultsDiv.appendChild(section);
+            });
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById("results").innerHTML = `<p class="uk-text-danger">An error occurred while fetching results.</p>`;
+        });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Ignore node_modules directory
+node_modules/
+
+#Ignorar resultados .txt
+youtube_ids.txt
+
+# Ignore log files
+*.log
+
+# Ignore temp files
+*.tmp
+
+# Ignore IDE files
+.idea/
+.vscode/
+
+# Ignore operating system files
+.DS_Store
+Thumbs.db

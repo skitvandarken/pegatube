@@ -4,6 +4,9 @@ node_modules/
 #Ignorar resultados .txt
 youtube_ids.txt
 
+# Ignorar o ficheiro .env
+.env
+
 # Ignore log files
 *.log
 

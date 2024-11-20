@@ -4,19 +4,33 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/joho/godotenv"
 	"google.golang.org/api/googleapi/transport"
 	"google.golang.org/api/youtube/v3"
 )
 
-const developerKey = "AIzaSyDlcqlvJPBTC-y71JruPLTCLTttCz0AXEg"
-
 func main() {
+	// Load the .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Error loading .env file")
+	}
+
+	// Retrieve the API key from the environment variable
+	developerKey := os.Getenv("YOUTUBE_API_KEY")
+	if developerKey == "" {
+		log.Fatal("API key is missing. Make sure it is set in the .env file.")
+	}
+
 	http.HandleFunc("/", serveHTML)
-	http.HandleFunc("/search", handleSearch)
+	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
+		handleSearch(w, r, developerKey)
+	})
 
 	log.Println("Server started at :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -26,7 +40,7 @@ func serveHTML(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "index.html") // Serve the front-end HTML
 }
 
-func handleSearch(w http.ResponseWriter, r *http.Request) {
+func handleSearch(w http.ResponseWriter, r *http.Request, developerKey string) {
 	queries := r.URL.Query().Get("queries")
 	maxResults := r.URL.Query().Get("max-results")
 

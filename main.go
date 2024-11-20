@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"google.golang.org/api/googleapi/transport"
 	"google.golang.org/api/youtube/v3"
@@ -36,6 +37,9 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Calculate the timestamp for 24 hours ago
+	twentyFourHoursAgo := time.Now().Add(-24 * time.Hour).Format(time.RFC3339)
+
 	// Define the specific channel IDs to search within
 	channelIDs := []string{
 		"UCpf7-LhTbmKk11p4nqw5LYA", // TPA Online
@@ -49,7 +53,8 @@ func handleSearch(w http.ResponseWriter, r *http.Request) {
 		for _, channelID := range channelIDs {
 			call := service.Search.List([]string{"id", "snippet"}).
 				Q(strings.TrimSpace(term)).
-				ChannelId(channelID). // Filter results by channel ID
+				ChannelId(channelID).               // Filter results by channel ID
+				PublishedAfter(twentyFourHoursAgo). // Filter videos published after 24 hours ago
 				MaxResults(parseMaxResults(maxResults))
 			response, err := call.Do()
 			if err != nil {

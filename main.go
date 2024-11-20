@@ -93,6 +93,10 @@ func handleSearch(w http.ResponseWriter, r *http.Request, developerKey string) {
 				PublishedAfter(twentyFourHoursAgo). // Filter videos published after 24 hours ago
 				MaxResults(parseMaxResults(maxResults))
 			response, err := call.Do()
+			if err != nil {
+				http.Error(w, "Error making API call to YouTube", http.StatusInternalServerError)
+				return
+			}
 
 			for _, item := range response.Items {
 				if item.Id.Kind == "youtube#video" {

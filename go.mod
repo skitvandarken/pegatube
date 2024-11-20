@@ -2,7 +2,12 @@ module pegatube
 
 go 1.23.2
 
-require google.golang.org/api v0.206.0
+require (
+	github.com/aws/aws-sdk-go v1.55.5
+	google.golang.org/api v0.206.0
+)
+
+require github.com/jmespath/go-jmespath v0.4.0 // indirect
 
 require (
 	cloud.google.com/go/auth v0.10.2 // indirect

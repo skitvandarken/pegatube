@@ -29,40 +29,71 @@
       </div>
 
       <button type="submit" class="uk-button uk-button-primary">Pegar</button>
+      <button id="download-results" class="uk-button uk-button-secondary uk-margin-left" disabled>Baixar Resultados</button>
+
     </form>
 
     <div id="results" class="uk-margin-large-top"></div>
   </div>
 
   <script>
+    let currentResults = []; // To store the results for download
+  
     document.getElementById("search-form").addEventListener("submit", function(event) {
       event.preventDefault();
       const queries = document.getElementById("queries").value;
       const maxResults = document.getElementById("max-results").value;
-
+  
       fetch(`/search?queries=${encodeURIComponent(queries)}&max-results=${maxResults}`)
         .then(response => response.json())
         .then(data => {
           const resultsDiv = document.getElementById("results");
           resultsDiv.innerHTML = "";
-
+          currentResults = []; // Reset results
+  
           if (data.error) {
             resultsDiv.innerHTML = `<p class="uk-text-danger">${data.error}</p>`;
+            document.getElementById("download-results").disabled = true;
           } else {
             data.forEach(result => {
+              currentResults.push(`ID: ${result.id}, Title: ${result.title}`);
               const section = document.createElement("div");
               section.className = "uk-card uk-card-default uk-card-body uk-margin";
               section.innerHTML = `<h3>${result.title}</h3><p>ID: ${result.id}</p>`;
               resultsDiv.appendChild(section);
             });
+  
+            // Enable the download button if there are results
+            document.getElementById("download-results").disabled = currentResults.length === 0;
           }
         })
         .catch(err => {
           console.error(err);
           document.getElementById("results").innerHTML = `<p class="uk-text-danger">An error occurred while fetching results.</p>`;
+          document.getElementById("download-results").disabled = true;
         });
     });
+  
+    document.getElementById("download-results").addEventListener("click", function() {
+      if (currentResults.length === 0) {
+        alert("No results to download!");
+        return;
+      }
+  
+      const blob = new Blob([currentResults.join("\n")], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+  
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "results.txt";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+  
+      URL.revokeObjectURL(url);
+    });
   </script>
+  
 
 </body>
 </html>

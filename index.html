@@ -7,6 +7,21 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uikit@3.16.0/dist/css/uikit.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/uikit@3.16.0/dist/js/uikit.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/uikit@3.16.0/dist/js/uikit-icons.min.js"></script>
+  <style>
+    .selection-box {
+      display: inline-block;
+      border: 1px solid #ddd;
+      padding: 10px 15px;
+      margin: 5px;
+      cursor: pointer;
+      border-radius: 5px;
+      user-select: none;
+    }
+    .selection-box.selected {
+      background-color: #1e87f0;
+      color: white;
+    }
+  </style>
 </head>
 <body>
 
@@ -15,16 +30,27 @@
 
     <form id="search-form" class="uk-form-stacked">
       <div class="uk-margin">
-        <label class="uk-form-label" for="queries">Nomes de Programas (separados por vírgula e tal como aparecem no YouTube)</label>
-        <div class="uk-form-controls">
-          <input class="uk-input" id="queries" type="text" placeholder="e.g., Telejornal, Jornal da Tarde, Ecos e Factos">
+        <label class="uk-form-label uk-text-center">Selecione os programas quer actualizar (clique para selecionar)</label>
+        <div id="selection-container" class="uk-margin-top uk-text-center">
+          <section>
+            <h3><b>TPA</b></h3>
+          <div class="selection-box" data-value="Telejornal">Telejornal</div>
+          <div class="selection-box" data-value="Jornal da Tarde">Jornal da Tarde</div>
+          <div class="selection-box" data-value="Diário Desportivo">Diário Desportivo</div>
+          <div class="selection-box" data-value="Ecos e Factos">Ecos e Factos</div>
+        </section>
+        <section>
+          <h3><b>TV Zimbo</b></h3>
+          <div class="selection-box" data-value="Jornal da Zimbo">Jornal da Zimbo</div>
+          <div class="selection-box" data-value="Jornal da Hora">Jornal da Hora</div>
+        </section>
         </div>
       </div>
 
-      <div class="uk-margin">
-        <label class="uk-form-label" for="max-results">Númer Max de Resultados</label>
+      <div class="uk-margin uk-text-center ">
+        <label class="uk-form-label" for="max-results">Número Máx de Resultados</label>
         <div class="uk-form-controls">
-          <input class="uk-input" id="max-results" type="number" value="10" min="1" max="50">
+          <input class="uk-input " id="max-results" type="number" value="10" min="1" max="50">
         </div>
       </div>
 
@@ -35,9 +61,20 @@
   </div>
 
   <script>
+    // Handle selection
+    document.querySelectorAll('.selection-box').forEach(box => {
+      box.addEventListener('click', function() {
+        this.classList.toggle('selected');
+      });
+    });
+
     document.getElementById("search-form").addEventListener("submit", function(event) {
       event.preventDefault();
-      const queries = document.getElementById("queries").value;
+
+      // Collect selected options
+      const selectedOptions = Array.from(document.querySelectorAll('.selection-box.selected')).map(box => box.getAttribute('data-value'));
+      const queries = selectedOptions.join(","); // Join the selected options with commas
+
       const maxResults = document.getElementById("max-results").value;
 
       fetch(`/search?queries=${encodeURIComponent(queries)}&max-results=${maxResults}`)

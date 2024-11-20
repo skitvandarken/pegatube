@@ -27,6 +27,11 @@ func main() {
 		log.Fatal("API key is missing. Make sure it is set in the .env file.")
 	}
 
+	// Test the API connection
+	if !testAPIConnection(developerKey) {
+		log.Fatal("Failed to connect to the YouTube API. Check your API key and network connection.")
+	}
+
 	http.HandleFunc("/", serveHTML)
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		handleSearch(w, r, developerKey)
@@ -34,6 +39,23 @@ func main() {
 
 	log.Println("Server started at :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+// testAPIConnection tests the API connection and returns false if the connection fails
+func testAPIConnection(developerKey string) bool {
+	client := &http.Client{Transport: &transport.APIKey{Key: developerKey}}
+	service, err := youtube.New(client)
+	if err != nil {
+		return false
+	}
+
+	// Perform a simple search query to test the connection
+	call := service.Search.List([]string{"id"}).
+		Q("Telejornal"). // Arbitrary search term for testing
+		MaxResults(1)
+
+	_, err = call.Do()
+	return err == nil
 }
 
 func serveHTML(w http.ResponseWriter, r *http.Request) {
@@ -71,10 +93,6 @@ func handleSearch(w http.ResponseWriter, r *http.Request, developerKey string) {
 				PublishedAfter(twentyFourHoursAgo). // Filter videos published after 24 hours ago
 				MaxResults(parseMaxResults(maxResults))
 			response, err := call.Do()
-			if err != nil {
-				http.Error(w, "Error making API call to YouTube", http.StatusInternalServerError)
-				return
-			}
 
 			for _, item := range response.Items {
 				if item.Id.Kind == "youtube#video" {
